@@ -1,0 +1,59 @@
+{
+  "agent": "RoutePlanningAgent",
+  "description": "Generates alternative travel routes between origin and destination using available transportation options.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["origin", "destination", "travel_date"],
+    "additionalProperties": false,
+    "properties": {
+      "origin": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3
+      },
+      "destination": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3
+      },
+      "travel_date": {
+        "type": "string",
+        "format": "date"
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["routes"],
+    "additionalProperties": false,
+    "properties": {
+      "routes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["path", "duration_hours", "cost", "overnight"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "duration_hours": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost": {
+              "type": "number",
+              "minimum": 0
+            },
+            "overnight": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

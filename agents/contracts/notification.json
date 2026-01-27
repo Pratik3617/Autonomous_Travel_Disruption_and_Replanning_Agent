@@ -1,0 +1,33 @@
+{
+  "agent": "NotificationAgent",
+  "description": "Generates a user-facing message summarizing disruption risk and recommended action.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["trip_id", "decision", "explanation"],
+    "additionalProperties": false,
+    "properties": {
+      "trip_id": {
+        "type": "string"
+      },
+      "decision": {
+        "type": "object"
+      },
+      "explanation": {
+        "type": "string"
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["message"],
+    "additionalProperties": false,
+    "properties": {
+      "message": {
+        "type": "string",
+        "description": "Final user-facing notification message"
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "agent": "DelayExplanationAgent",
+  "description": "Explains the primary reasons behind predicted flight delay or cancellation risk using historical delay cause data.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["airline_code", "origin", "destination", "month"],
+    "additionalProperties": false,
+    "properties": {
+      "airline_code": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 3,
+        "description": "IATA airline code"
+      },
+      "origin": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "description": "IATA origin airport code"
+      },
+      "destination": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "description": "IATA destination airport code"
+      },
+      "month": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 12,
+        "description": "Month of travel (1-12)"
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["primary_causes", "explanation"],
+    "additionalProperties": false,
+    "properties": {
+      "primary_causes": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "weather",
+            "carrier_delay",
+            "nas",
+            "security",
+            "late_aircraft"
+          ]
+        },
+        "description": "Dominant historical delay causes for this route"
+      },
+      "explanation": {
+        "type": "string",
+        "description": "Human-readable explanation of why disruption risk is high or low"
+      }
+    }
+  }
+}

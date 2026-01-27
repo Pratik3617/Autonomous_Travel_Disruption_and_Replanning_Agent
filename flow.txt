@@ -1,0 +1,12 @@
+Steps :
+1. Setup Mongo and PostgreSQL and create schemas
+2. Define Agent interface contracts (input/output)
+    Agents :
+        i> Trip Memory Agent : Stores and maintains the current trip state and user preferences across the entire decision lifecycle.
+        ii> Disruption Prediction Agent : Predicts the probability of flight delay or cancellation using historical and route-level data.
+        iii> Delay Cause Explanation Agent : Explains why a disruption is likely by analyzing historical delay causes for the route and airline.
+        iv> Disruption Decision Agent : Decides whether replanning is required by comparing disruption risk against user tolerance thresholds.
+        v> Route Planning Agent : Generates feasible alternative travel routes using available flight and transit networks.
+        vi> Constraint Filtering Agent : Filters candidate routes based on user constraints such as budget, delay tolerance, and overnight avoidance.
+        vii> Final Decision Agent : Selects the optimal route and produces a clear rationale for the chosen option.
+        viii> Notification Agent : Converts the final system decision into a concise, user-friendly message or alert.

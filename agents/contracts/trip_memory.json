@@ -1,0 +1,69 @@
+{
+  "agent": "TripMemoryAgent",
+  "description": "Stores and maintains the current trip state and user preferences across the entire decision lifecycle.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["user_id", "trip", "preferences"],
+    "additionalProperties": false,
+
+    "properties": {
+      "user_id": {
+        "type": "string",
+        "description": "Unique identifier for the user"
+      },
+
+      "trip": {
+        "type": "object",
+        "required": ["flight_number", "airline_code", "origin", "destination", "flight_date"],
+        "additionalProperties": false,
+
+        "properties": {
+          "flight_number": { "type": "string" },
+          "airline_code": { "type": "string" },
+          "origin": { "type": "string" },
+          "destination": { "type": "string" },
+          "flight_date": { "type": "string", "format": "date" }
+        }
+      },
+
+      "preferences": {
+        "type": "object",
+        "required": ["max_budget", "max_delay_minutes", "avoid_overnight"],
+        "additionalProperties": false,
+
+        "properties": {
+          "max_budget": {
+            "type": "number",
+            "description": "Maximum acceptable cost for replanned route"
+          },
+          "max_delay_minutes": {
+            "type": "integer",
+            "description": "Maximum acceptable arrival delay in minutes"
+          },
+          "avoid_overnight": {
+            "type": "boolean",
+            "description": "Whether overnight layovers should be avoided"
+          }
+        }
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["trip_id", "status"],
+    "additionalProperties": false,
+
+    "properties": {
+      "trip_id": {
+        "type": "string",
+        "description": "Unique trip identifier stored in MongoDB"
+      },
+      "status": {
+        "type": "string",
+        "description": "Current trip monitoring status (e.g., MONITORING, REPLAN_REQUIRED)"
+      }
+    }
+  }
+}

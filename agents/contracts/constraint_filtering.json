@@ -1,0 +1,42 @@
+{
+  "agent": "ConstraintFilteringAgent",
+  "description": "Filters generated travel routes based on user constraints and preferences.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["routes", "preferences"],
+    "additionalProperties": false,
+    "properties": {
+      "routes": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "preferences": {
+        "type": "object",
+        "required": ["max_budget", "avoid_overnight"],
+        "additionalProperties": false,
+        "properties": {
+          "max_budget": {
+            "type": "number",
+            "minimum": 0
+          },
+          "avoid_overnight": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["filtered_routes"],
+    "additionalProperties": false,
+    "properties": {
+      "filtered_routes": {
+        "type": "array",
+        "items": { "type": "object" }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "agent": "FinalDecisionAgent",
+  "description": "Selects the optimal travel route based on filtered alternatives and risk context.",
+
+  "input_schema": {
+    "type": "object",
+    "required": ["filtered_routes", "risk_context"],
+    "additionalProperties": false,
+    "properties": {
+      "filtered_routes": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "risk_context": {
+        "type": "object",
+        "required": ["delay_probability"],
+        "additionalProperties": false,
+        "properties": {
+          "delay_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["selected_route", "reason", "confidence"],
+    "additionalProperties": false,
+    "properties": {
+      "selected_route": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "reason": {
+        "type": "string"
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    }
+  }
+}

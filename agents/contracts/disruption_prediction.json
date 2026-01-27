@@ -1,0 +1,77 @@
+{
+    "agent": "DisruptionPredictionAgent",
+    "description":"Predicts the probability of flight delay or cancellation using historical and route-level data.",
+    "input_schema":{
+        "type": "object",
+        "required": ["trip_id","flight_date","airline_code","origin","destination"],
+        "additionalProperties": false,
+        "properties":{
+            "trip_id": {
+                "type":"string", 
+                "description": "Unique identifier of the trip stored in MongoDB"
+            },
+            "flight_date": {
+                "type": "string", 
+                "format": "date", 
+                "description": "Scheduled departure date of the flight"
+            },
+            "airline_code": {
+                "type": "string",  
+                "minLength": 2,
+                "maxLength": 3, 
+                "description": "IATA airline code (e.g., LH, AA)"
+            },
+            "origin": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3,
+                "description": "IATA origin airport code (e.g., DEL)"
+            },
+            "destination": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3,
+                "description": "IATA destination airport code (e.g., FRA)"
+            }
+        }
+    },
+    "output_schema":{
+        "type": "object",
+        "required": ["delay_probability", "cancellation_probability", "confidence", "risk_level"],
+        "additionalProperties": false,
+        "properties":{
+            "delay_probability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Estimated probability that the flight will experience a delay"
+            },
+            "cancellation_probability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Estimated probability that the flight will be cancelled"
+            },
+            "prediction_confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Confidence score indicating reliability of the prediction based on data coverage and model certainty"
+            },
+            "risk_level": {
+                "type": "string",
+                "enum": ["LOW", "MEDIUM", "HIGH"],
+                "description": "Coarse-grained risk category derived from delay and cancellation probabilities"
+            },
+            "context_used": {
+                "type": "array",
+                "items": {
+                "type": "string",
+                "enum": ["route_stats", "airport_stats", "airline_history", "seasonality"]
+                },
+                "description": "Signals and data sources used to generate the prediction"
+            }
+        }
+
+    }
+}

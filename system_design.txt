@@ -1,0 +1,344 @@
+## Autonomous Travel Disruption & Re-Planning Agent
+
+---
+
+## 1️⃣ Problem Restatement
+
+**Goal**
+Build an **agentic system** that:
+
+* Predicts **flight disruptions (delay/cancellation)**
+* Explains *why* disruption is likely
+* Automatically **re-plans travel routes**
+* Optimizes based on **user preferences**
+* Works **without relying on proprietary real-time APIs**
+
+This is **decision automation**, not just prediction.
+
+---
+
+## 2️⃣ High-Level Architecture (Bird’s-Eye View)
+
+```
+┌─────────────┐
+│   User App  │
+│ (Web/Mobile)│
+└──────┬──────┘
+       │ REST / WebSocket
+┌──────▼──────────────────────────┐
+│          FastAPI Gateway        │
+│  (Auth, validation, orchestration)│
+└──────┬──────────────────────────┘
+       │
+┌──────▼──────────────────────────┐
+│      MCP Agent Orchestrator     │
+│ (controls agent execution flow) │
+└──────┬──────────────────────────┘
+       │
+┌──────▼──────────┐    ┌──────────▼──────────┐
+│ Predictive Agents│   │ Planning Agents     │
+│ (delay, causes)  │   │ (routes, tradeoffs) │
+└──────┬───────────┘   └──────────┬──────────┘
+       │                          │
+┌──────▼──────────┐   ┌──────────▼──────────┐
+│  Data Layer     │   │ External Knowledge  │
+│ (SQL + Mongo)   │   │ (maps, weather, etc)│
+└─────────────────┘   └─────────────────────┘
+```
+
+---
+
+## 3️⃣ Core Design Principle (Why This Is Agentic)
+
+We **separate concerns**:
+
+| Concern     | Why separate                |
+| ----------- | --------------------------- |
+| Prediction  | ML + statistics             |
+| Explanation | Human-readable reasoning    |
+| Planning    | Graph search + optimization |
+| Preferences | Stateful, personal          |
+| Monitoring  | Continuous                  |
+
+Each concern = **one agent**.
+
+No god-model. No monolith.
+
+---
+
+## 4️⃣ Agent Breakdown (Very Important)
+
+### 🧠 1. Trip Memory Agent
+
+**Responsibility**
+
+* Stores itinerary
+* Stores user preferences
+* Maintains state across time
+
+**Examples**
+
+* Budget
+* Max acceptable delay
+* Avoid overnight stays
+
+**Storage**
+
+* MongoDB (document-based, evolving state)
+
+---
+
+### 🧠 2. Disruption Prediction Agent
+
+**Responsibility**
+
+* Predict probability of delay or cancellation
+* Uses historical data (our Kaggle datasets)
+
+**Inputs**
+
+* Flight number
+* Origin/destination
+* Date, time
+* Airline
+
+**Outputs**
+
+```json
+{
+  "delay_probability": 0.42,
+  "cancellation_probability": 0.08
+}
+```
+
+**Tech**
+
+* Trained ML model
+* SQL for feature retrieval
+
+---
+
+### 🧠 3. Delay Cause Explanation Agent
+
+**Responsibility**
+
+* Explains *why* disruption is likely
+* Uses BTS delay-cause dataset
+
+**Output Example**
+
+```json
+{
+  "primary_causes": ["weather", "carrier_delay"],
+  "explanation": "This route experiences winter weather disruptions 38% of the time."
+}
+```
+
+This agent is **crucial for trust**.
+
+---
+
+### 🧠 4. Disruption Detection Agent
+
+**Responsibility**
+
+* Decides when action is required
+* Converts prediction → decision
+
+**Logic**
+
+```text
+IF delay_probability > threshold
+OR cancellation_probability > threshold
+→ trigger replanning
+```
+
+This agent is **policy-driven**, not ML-heavy.
+
+---
+
+### 🧠 5. Route Planning Agent
+
+**Responsibility**
+
+* Generate alternative routes
+* Multimodal (flight + train + bus)
+
+**Inputs**
+
+* Origin
+* Destination
+* Constraints
+
+**Outputs**
+
+```json
+[
+  { "route": ["DEL → FRA → BER"], "duration": 14h, "cost": 820 },
+  { "route": ["DEL → MUC → BER"], "duration": 15h, "cost": 760 }
+]
+```
+
+**Data**
+
+* OpenFlights
+* GTFS (future extension)
+
+---
+
+### 🧠 6. Constraint & Preference Agent
+
+**Responsibility**
+
+* Filter routes based on:
+
+  * Budget
+  * Time
+  * Overnight stays
+  * User dislikes
+
+This agent makes it **personal**, not generic.
+
+---
+
+### 🧠 7. Decision Agent
+
+**Responsibility**
+
+* Rank routes
+* Select best option
+* Provide rationale
+
+**Output**
+
+```json
+{
+  "selected_route": "DEL → MUC → BER",
+  "reason": "Minimizes cost while keeping arrival delay under 2 hours"
+}
+```
+
+This is where **agent reasoning shines**.
+
+---
+
+### 🧠 8. Notification Agent
+
+**Responsibility**
+
+* Communicate outcome clearly
+* Human-friendly explanation
+* No raw probabilities dumped
+
+---
+
+## 5️⃣ Data Layer Design
+
+### 🗄 SQL (Structured, Analytical)
+
+Used for:
+
+* Flight history
+* Delay statistics
+* Time-series queries
+
+**Examples**
+
+* PostgreSQL
+* Indexed by route, airline, date
+
+---
+
+### 📦 MongoDB (State & Memory)
+
+Used for:
+
+* Trips
+* User preferences
+* Agent intermediate outputs
+
+This separation is **industry-correct**.
+
+---
+
+## 6️⃣ FastAPI – Service Boundaries
+
+### Core APIs
+
+```http
+POST /trip/create
+POST /trip/monitor
+GET  /trip/status
+POST /trip/replan
+```
+
+FastAPI:
+
+* Validates input
+* Calls MCP orchestrator
+* Returns final decision
+
+Agents never talk directly to users.
+
+---
+
+## 7️⃣ MCP Orchestration Flow (Step-by-Step)
+
+```
+Trip Created
+   ↓
+Trip Memory Agent stores state
+   ↓
+Disruption Prediction Agent runs
+   ↓
+Explanation Agent enriches output
+   ↓
+Disruption Detection Agent decides
+   ↓ (if triggered)
+Route Planning Agent generates options
+   ↓
+Constraint Agent filters
+   ↓
+Decision Agent selects best
+   ↓
+Notification Agent responds
+```
+
+This flow is **clean, testable, extensible**.
+
+---
+
+## 8️⃣ Failure & Edge-Case Handling
+
+| Scenario         | Handling                         |
+| ---------------- | -------------------------------- |
+| Missing data     | Fallback to route-level averages |
+| Low confidence   | Ask user confirmation            |
+| Too many options | Limit + explain                  |
+| No valid routes  | Suggest wait / monitor           |
+
+This matters a LOT in interviews.
+
+---
+
+## 9️⃣ Why This Design Is Strong
+
+* ✅ Truly agentic (not forced)
+* ✅ Clear separation of responsibilities
+* ✅ Works offline / with replayed data
+* ✅ Plug-and-play data sources
+* ✅ Easy to extend (trains, hotels later)
+
+---
+
+## 10️⃣ What Comes Next (Logical Order)
+
+Now that **system design is locked**, the correct next steps are:
+
+1️⃣ **Database schema design (SQL + Mongo)**
+2️⃣ **Agent interface contracts (inputs/outputs)**
+3️⃣ **Data ingestion & ETL plan**
+4️⃣ **Modeling strategy**
+
+
+

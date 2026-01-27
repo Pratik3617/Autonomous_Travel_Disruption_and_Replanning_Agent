@@ -1,0 +1,58 @@
+{
+  "agent": "DisruptionDecisionAgent",
+  "description": "Determines whether a travel re-plan is required based on predicted risk and user tolerance.",
+
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "delay_probability",
+      "cancellation_probability",
+      "risk_level",
+      "user_preferences"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "delay_probability": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "cancellation_probability": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": ["LOW", "MEDIUM", "HIGH"]
+      },
+      "user_preferences": {
+        "type": "object",
+        "required": ["max_delay_minutes"],
+        "additionalProperties": false,
+        "properties": {
+          "max_delay_minutes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  },
+
+  "output_schema": {
+    "type": "object",
+    "required": ["action", "reason"],
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["MONITOR", "REPLAN"]
+      },
+      "reason": {
+        "type": "string",
+        "description": "Explanation for why replanning was or was not triggered"
+      }
+    }
+  }
+}
