@@ -10,3 +10,11 @@ Steps :
         vi> Constraint Filtering Agent : Filters candidate routes based on user constraints such as budget, delay tolerance, and overnight avoidance.
         vii> Final Decision Agent : Selects the optimal route and produces a clear rationale for the chosen option.
         viii> Notification Agent : Converts the final system decision into a concise, user-friendly message or alert.
+
+3. ETL-pipeline deisgn(Extract, Trandform and Load): ETL is not “load CSV into DB”.
+    Take Kaggle CSV files → put clean data into PostgreSQL tables → create aggregated tables agents can query
+    ETL must:
+    i> support agent contracts
+    ii> produce stable features
+    iii> allow fast online inference
+    iv> separate raw data from derived intelligence
